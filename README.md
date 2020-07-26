@@ -1,4 +1,4 @@
-# titanic-ai
+# Titanic-AI
 
 This is my interpretation of the Titanic competition of Kaggle.
 It uses a neural network build with Keras that contains an input layer with 12 nodes, two hidden layer with 16 neurons each and a sigmoid as an output layer.
