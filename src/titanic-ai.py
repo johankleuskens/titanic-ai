@@ -5,19 +5,18 @@ Created on Jul 25, 2020
 '''
 import pandashelper as pdh
 import pandas as pd
-from sklearn.model_selection import import train_test_split
-#from tensorflow_estimator.python.estimator.training import TrainSpec
+from sklearn.model_selection import train_test_split
 
 # // Load the training and test set 
 dataset_training = pd.read_csv("~/Titanic-AI/datasets/train.csv")
 dataset_test = pd.read_csv("~/Titanic-AI/datasets/test.csv")
 
 # Drop passenger id
-dataset_training.drop('PassengerId')
+dataset_training = dataset_training.drop('PassengerId', 1)
 # Change Pclass into dummy vars
 pdh.encode_text_dummy(dataset_training, 'Pclass')
 #Drop Name of passenger
-dataset_training.drop('Name')
+dataset_training = dataset_training.drop('Name', 1)
 # Change Sex into dummy vars
 pdh.encode_text_dummy(dataset_training, 'Sex')
 # Fill in missing values on Age column
@@ -28,14 +27,22 @@ pdh.encode_numeric_zscore(dataset_training, 'Age')
 pdh.encode_numeric_zscore(dataset_training, 'SibSp')
 # Normalize nr of parents
 pdh.encode_numeric_zscore(dataset_training, 'Parch')
-# Normalize Fare
+# Remove ticket
+dataset_training = dataset_training.drop('Ticket', 1)
+# Normalize Fare and remove outliers
 pdh.encode_numeric_zscore(dataset_training, 'Fare')
+pdh.remove_outliers(dataset_training, 'Fare', 3)
+# Remove cabin
+dataset_training = dataset_training.drop('Cabin', 1)
 # Change place of embarked into dummy vars
 pdh.encode_text_dummy(dataset_training, 'Embarked')
-        
-# Split train set into train and test set
-train_set, test_set = train_test_split(dataset_training, 0.15)
 
-# Convert pandas dataframe to numpy array
+# Convert train set to numpy arrays
+dataset_training_x,  dataset_training_y = pdh.to_xy(dataset_training, 'Survived')
+        
+# Split data set into train and test set
+train_x, test_x, train_y, test_y = train_test_split(dataset_training_x, dataset_training_y, test_size = 0.15, random_state = 0)
+
+print('Finished!')
 
          
