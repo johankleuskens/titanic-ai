@@ -13,6 +13,8 @@ from tensorflow import keras
 def preprocess_dataset(df):
     # Drop passenger id
     df = df.drop('PassengerId', 1)
+    # Change type of Survived column to bool to prevent to_xy function to change this column into dummy vars
+    df = df.astype({'Survived': bool})
     # Change Pclass into dummy vars
     pdh.encode_text_dummy(df, 'Pclass')
     #Drop Name of passenger
@@ -48,8 +50,6 @@ dataset_training = preprocess_dataset(dataset_training)
 
 # Convert train set to numpy arrays
 dataset_training_x,  dataset_training_y = pdh.to_xy(dataset_training, 'Survived')
-# We need to overwrite the y dataset here becuase the to_xy function transforms 'Survived' into a dummy var
-dataset_training_y = dataset_training['Survived']  
 
 # Split data set into train and test set
 train_x, test_x, train_y, test_y = train_test_split(dataset_training_x, dataset_training_y, test_size = 0.15, random_state = 0)
@@ -59,14 +59,17 @@ print('Finished preprocessing data...')
 # Create a Keras model
 model = tf.keras.Sequential(
     [
-        tf.keras.layers.Dense(12, activation=tf.nn.relu),
+        tf.keras.layers.Dense(input_shape = (12,), units = 16, activation=tf.nn.relu),
         tf.keras.layers.Dense(16,activation=tf.nn.relu),
         tf.keras.layers.Dense(1, activation=tf.nn.sigmoid)
     ])
 model.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
 # Train the model
-model.fit(train_x, train_y, epochs=50)
+model.fit(train_x, train_y, epochs=50, batch_size=5)
 
 # Getting prediction data from test set
 prediction = model.evaluate(test_x, test_y)
+
+# Now use the complete dataset_training for training
+
          
