@@ -13,8 +13,9 @@ from tensorflow import keras
 def preprocess_dataset(df):
     # Drop passenger id
     df = df.drop('PassengerId', 1)
-    # Change type of Survived column to bool to prevent to_xy function to change this column into dummy vars
-    df = df.astype({'Survived': bool})
+    if 'Survived' in df:
+        # Change type of Survived column to bool to prevent to_xy function to change this column into dummy vars
+        df = df.astype({'Survived': bool})
     # Change Pclass into dummy vars
     pdh.encode_text_dummy(df, 'Pclass')
     #Drop Name of passenger
@@ -33,7 +34,8 @@ def preprocess_dataset(df):
     df = df.drop('Ticket', 1)
     # Normalize Fare and remove outliers
     pdh.encode_numeric_zscore(df, 'Fare')
-    pdh.remove_outliers(df, 'Fare', 3)
+    if 'Survived' in df:
+        pdh.remove_outliers(df, 'Fare', 3)
     # Remove cabin
     df = df.drop('Cabin', 1)
     # Change place of embarked into dummy vars
@@ -42,16 +44,18 @@ def preprocess_dataset(df):
     
     
 # // Load the training and test set 
-dataset_training = pd.read_csv("~/Titanic-AI/datasets/train.csv")
-dataset_test = pd.read_csv("~/Titanic-AI/datasets/test.csv")
+dataset_training_org = pd.read_csv("~/Titanic-AI/datasets/train.csv")
+dataset_test_org = pd.read_csv("~/Titanic-AI/datasets/test.csv")
 
-# preprocess the dataset_training
-dataset_training = preprocess_dataset(dataset_training)
+# preprocess the datasets
+dataset_training = preprocess_dataset(dataset_training_org)
+dataset_test = preprocess_dataset(dataset_test_org)
 
-# Convert train set to numpy arrays
+# Convert data sets to numpy arrays
 dataset_training_x,  dataset_training_y = pdh.to_xy(dataset_training, 'Survived')
+dataset_test_x = pdh.to_xy(dataset_test)
 
-# Split data set into train and test set
+# Split training data set into train and test set
 train_x, test_x, train_y, test_y = train_test_split(dataset_training_x, dataset_training_y, test_size = 0.15, random_state = 0)
 
 print('Finished preprocessing data...')
@@ -64,12 +68,24 @@ model = tf.keras.Sequential(
         tf.keras.layers.Dense(1, activation=tf.nn.sigmoid)
     ])
 model.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
-# Train the model
-model.fit(train_x, train_y, epochs=50, batch_size=5)
 
-# Getting prediction data from test set
-prediction = model.evaluate(test_x, test_y)
+# Train the model
+#model.fit(train_x, train_y, epochs=50)
+# Getting evaluation data from test set
+#prediction = model.evaluate(test_x, test_y)
 
 # Now use the complete dataset_training for training
+model.fit(dataset_training_x, dataset_training_y, epochs=50)
+
+# Do prediction for test set 
+prediction = model.predict(dataset_test_x)
+
+# Create a new dataframe
+submission = pd.DataFrame(dataset_test_org['PassengerId'].copy())
+submission['Survived'] = [0 if i < 0.5 else 1 for i in prediction]
+submission.to_csv("~/Titanic-AI/datasets/submission.csv", index = False)
+
+print('Finished predicting test set...')
+
 
          

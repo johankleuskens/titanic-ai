@@ -65,11 +65,14 @@ def missing_default(df, name, default_value):
 
 
 # Convert a Pandas dataframe to the x,y inputs that TensorFlow needs
-def to_xy(df, target):
+def to_xy(df, target = None):
     result = []
     for x in df.columns:
         if x != target:
             result.append(x)
+    if target == None:
+        return df[result].values.astype(np.float32)
+    
     # find out the type of the target column.  Is it really this hard? :(
     target_type = df[target].dtypes
     target_type = target_type[0] if hasattr(
