@@ -7,6 +7,9 @@ import pandashelper as pdh
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
+import tensorflow as tf
+from tensorflow import keras
+
 # // Load the training and test set 
 dataset_training = pd.read_csv("~/Titanic-AI/datasets/train.csv")
 dataset_test = pd.read_csv("~/Titanic-AI/datasets/test.csv")
@@ -43,6 +46,19 @@ dataset_training_x,  dataset_training_y = pdh.to_xy(dataset_training, 'Survived'
 # Split data set into train and test set
 train_x, test_x, train_y, test_y = train_test_split(dataset_training_x, dataset_training_y, test_size = 0.15, random_state = 0)
 
-print('Finished!')
+print('Finished preprocessing data...')
 
+# Create a Keras model
+model = tf.keras.Sequential(
+    [
+        tf.keras.layers.Dense(12, activation=tf.nn.relu),
+        tf.keras.layers.Dense(32,activation=tf.nn.relu),
+        tf.keras.layers.Dense(2, activation=tf.nn.sigmoid)
+    ])
+model.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
+# Train the model
+model.fit(train_x, train_y, epochs=50)
+
+# Getting prediction data from test set
+prediction = model.evaluate(test_x, test_y)
          
