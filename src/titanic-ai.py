@@ -1,42 +1,41 @@
 '''
 Created on Jul 25, 2020
 
-@author: johan
+@author: johan kleuskens
 '''
 import pandashelper as pdh
 import pandas as pd
+from sklearn.model_selection import import train_test_split
 #from tensorflow_estimator.python.estimator.training import TrainSpec
 
 # // Load the training and test set 
 dataset_training = pd.read_csv("~/Titanic-AI/datasets/train.csv")
 dataset_test = pd.read_csv("~/Titanic-AI/datasets/test.csv")
 
+# Drop passenger id
+dataset_training.drop('PassengerId')
 # Change Pclass into dummy vars
-dataset_training = pdh.encode_text_dummy(dataset_training, 'Pclass')
+pdh.encode_text_dummy(dataset_training, 'Pclass')
+#Drop Name of passenger
+dataset_training.drop('Name')
 # Change Sex into dummy vars
-dataset_training = pdh.encode_text_dummy(dataset_training, 'Sex')
-# Fill in missing values
-dataset_training = pdh.missing_median(dataset_training, 'Age')
+pdh.encode_text_dummy(dataset_training, 'Sex')
+# Fill in missing values on Age column
+pdh.missing_median(dataset_training, 'Age')
 # Normalize Age
-dataset_training = pdh.encode_numeric_zscore(dataset_training, 'Age')
-# Change nr of siblings on board  into dummy vars
-dataset_training = pdh.encode_text_dummy(dataset_training, 'SibSp')
-# Change nr of parents on board  into dummy vars
-dataset_training = pdh.encode_text_dummy(dataset_training, 'Parch')
+pdh.encode_numeric_zscore(dataset_training, 'Age')
+# Normalize nr siblings
+pdh.encode_numeric_zscore(dataset_training, 'SibSp')
+# Normalize nr of parents
+pdh.encode_numeric_zscore(dataset_training, 'Parch')
 # Normalize Fare
-dataset_training = pdh.encode_numeric_zscore(dataset_training, 'Fare')
+pdh.encode_numeric_zscore(dataset_training, 'Fare')
 # Change place of embarked into dummy vars
-dataset_training = pdh.encode_text_dummy(dataset_training, 'Embarked')
-
-
-         
+pdh.encode_text_dummy(dataset_training, 'Embarked')
+        
 # Split train set into train and test set
-test_size = int(dataset_training.count()[0] * 0.15)  # testing set will be 15% of training set 
-train_set = dataset_training.iloc[:-test_size,:].copy()
-test_set  = dataset_training.iloc[-test_size:,:].copy()
+train_set, test_set = train_test_split(dataset_training, 0.15)
 
 # Convert pandas dataframe to numpy array
-df_train_set = train_set.to_numpy()
-df_test_set  = test_set.to_numpy()
 
          

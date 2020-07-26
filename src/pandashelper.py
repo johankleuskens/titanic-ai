@@ -1,7 +1,7 @@
 '''
 Created on Jul 26, 2020
 
-@author: johan
+@author: johan kleuskens
 '''
 import base64
 import os
